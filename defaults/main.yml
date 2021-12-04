@@ -1,3 +1,5 @@
 ---
 filebeat_version: "7.14.0"
 filebeat_install_type: remote
+filebeat_elastic_host: 'el_instance'
+filebeat_kibana_host: 'ki_instance'

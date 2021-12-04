@@ -1,0 +1,43 @@
+---
+- name: Install Elasticsearch
+  hosts: all
+  pre_tasks:
+    - include_tasks: "prepare_{{ ansible_facts.pkg_mgr }}.yml"
+  roles:
+    - role: mnt-homeworks-ansible
+      vars:
+        - ansible_become: false
+    - name: kibana-role
+      vars:
+        - ansible_become: false
+        - kibana_elastic_host: '{{ inventory_hostname }}'
+  post_tasks:
+    - name: Create user
+      user:
+        name: test
+        state: present
+    - name: Adding user to sudoers
+      vars:
+        - user: test
+      template:
+        src: sudo_user.j2
+        dest: /etc/sudoers.d/sudo_user
+        mode: 0440
+        owner: root
+        group: root
+    - name: Change permissions && Start elastic
+      shell: |
+        chown -R test /var/log/elasticsearch
+        chown -R test /var/lib/elasticsearch
+        usermod -g elasticsearch test
+        su test <<EOF
+        /usr/share/elasticsearch/bin/elasticsearch -d
+        EOF
+    - name: Change permissions && Start kibana
+      shell: |
+        chown -R test /var/log/kibana
+        chown -R test /var/lib/kibana
+        chown -R test /etc/kibana
+        su test <<EOF
+        nohup /usr/share/kibana/bin/kibana --config /etc/kibana/kibana.yml </dev/null >/dev/null 2>&1 &
+        EOF

@@ -1,0 +1,23 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: Verify elastic's http
+    uri:
+      url: http://localhost:9200
+  - name: Verify kibana's http
+    uri:
+      url: http://localhost:5601
+  - name: Find filebeat's log for elastic
+    shell: "grep -i -c 'elasticsearch url: http://.*:9200' /var/log/filebeat/filebeat"
+    register: elastic_cnt
+  - name: Verify filebeat's log for elastic
+    assert:
+      that: elastic_cnt.stdout | int > 0
+  - name: Find filebeat's log for kibana
+    shell: "grep -i -c 'Kibana url: http://.*:5601' /var/log/filebeat/filebeat"
+    register: kibana_cnt
+  - name: Verify filebeat's log for kibana
+    assert:
+      that: kibana_cnt.stdout | int > 0
