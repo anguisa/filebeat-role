@@ -1,0 +1,11 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include filebeat-role"
+      include_role:
+        name: "filebeat-role"
+      vars:
+        - ansible_become: false
+        - filebeat_elastic_host: '{{ inventory_hostname }}'
+        - filebeat_kibana_host: '{{ inventory_hostname }}'
